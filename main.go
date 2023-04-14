@@ -18,7 +18,7 @@ type EnvVar struct {
 	Value     string `yaml:"value"`
 	Type      string `yaml:"type,omitempty"`      // *string*, array
 	Separator string `yaml:"separator,omitempty"` // Default: ","
-	Action    string `yaml:"action,omitempty"`    // *replace*, merge
+	Action    string `yaml:"action,omitempty"`    // *replace*, merge, new
 }
 
 type EnvVarList []EnvVar
@@ -38,7 +38,7 @@ var (
 	shell          string
 	shellCommand   string
 	configFileName string
-	configName     string
+	configNames    string
 )
 
 const defaultConfigFile = ".envctl.yaml"
@@ -53,7 +53,7 @@ func init() {
 	flag.StringVar(&shell, "shell", defaultShell, "shell to use for command interpretation")
 	flag.StringVar(&logFileName, "log", "", "log file name")
 	flag.StringVar(&configFileName, "config-file", defaultConfigFile, "Environment list file")
-	flag.StringVar(&configName, "config", "", "Environment name")
+	flag.StringVar(&configNames, "config", "", "Environment name")
 }
 
 func compileEnv(envVarList EnvVarList) []string {
@@ -68,9 +68,14 @@ func compileEnv(envVarList EnvVarList) []string {
 		if myVar.Separator == "" {
 			myVar.Separator = ","
 		}
+		envVar, defined := os.LookupEnv(myVar.Name)
+		if myVar.Action == "new" {
+			if defined {
+				continue
+			}
+		}
 		if myVar.Type == "array" {
 			if myVar.Action == "merge" {
-				envVar, defined := os.LookupEnv(myVar.Name)
 				if defined {
 					elements := strings.Split(envVar, myVar.Separator)
 					myVar.Value = strings.Join(append(elements, myVar.Value), myVar.Separator)
@@ -102,6 +107,7 @@ func main() {
 	var envConfig EnvVarConfig
 	var stdout, stderr bytes.Buffer
 	var err error
+	var envList []string
 
 	configPaths := []string{configFileName, path.Join(homeDir, defaultConfigFile), path.Join("/etc/", defaultConfigFile)}
 	// configFile, err := os.Open(configFileName)
@@ -113,7 +119,11 @@ func main() {
 	configBytes, _ := ioutil.ReadAll(configFile)
 	yaml.Unmarshal(configBytes, &envConfig)
 	cmd := exec.Command(shell, "-c", shellCommand)
-	cmd.Env = append(os.Environ(), compileEnv(envConfig[configName])...)
+	configNameList := strings.Split(configNames, ",")
+	for _, configName := range configNameList {
+		envList = append(envList, compileEnv(envConfig[configName])...)
+	}
+	cmd.Env = append(os.Environ(), envList...)
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 	if err = cmd.Run(); err != nil {
