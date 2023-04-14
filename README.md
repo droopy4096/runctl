@@ -21,7 +21,7 @@ otherenv:
     value: baz 
 ```
 
-## Run any shell command within specified environment:
+## Run any shell command within specified environment (`myenv`):
 
 ```shell
 envctl -config-file test.yaml -command 'echo $BAR' -config myenv   
@@ -31,6 +31,8 @@ output is:
 ```
 bar
 ```
+
+then run the same command using different environment configuration (`otherenv`)
 
 ```shell
 envctl -config-file test.yaml -command 'echo $BAR' -config otherenv   
