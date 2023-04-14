@@ -59,6 +59,15 @@ func init() {
 func compileEnv(envVarList EnvVarList) []string {
 	var eList []string
 	for _, myVar := range envVarList {
+		if myVar.Type == "" {
+			myVar.Type = "string"
+		}
+		if myVar.Action == "" {
+			myVar.Action = "replace"
+		}
+		if myVar.Separator == "" {
+			myVar.Separator = ","
+		}
 		if myVar.Type == "array" {
 			if myVar.Action == "merge" {
 				envVar, defined := os.LookupEnv(myVar.Name)
