@@ -74,6 +74,10 @@ func compileEnv(envVarList EnvVarList) []string {
 				continue
 			}
 		}
+		if myVar.Action == "unset" {
+			os.Unsetenv(myVar.Name)
+			continue
+		}
 		if myVar.Type == "array" {
 			if myVar.Action == "merge" {
 				if defined {
