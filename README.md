@@ -12,13 +12,18 @@ create file `test.yaml`:
 myenv:
   - name: FOO
     value: foo 
+    action: new
   - name: BAR
     value: bar 
+    action: new
 otherenv:
   - name: BAR
     value: barother
+    action: replace
   - name: BAZ
     value: baz 
+    action: merge
+    separator: ":"
 ```
 
 ## Run any shell command within specified environment (`myenv`):
@@ -42,3 +47,19 @@ output is:
 ```
 barother
 ```
+
+### Action: new
+
+only set variable if it hasn't been already set
+
+### Action: replace
+
+default behavior: replace existing variable value
+
+### Action: merge
+
+treat variable as array splitting using `separator`, append value to existing array
+
+### Action: unset
+
+unset existing value - as if it was never set to begin with
