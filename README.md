@@ -29,7 +29,7 @@ otherenv:
 ## Run any shell command within specified environment (`myenv`):
 
 ```shell
-envctl -config-file test.yaml -command 'echo $BAR' -config myenv   
+envctl -config-file test.yaml -config myenv -- 'echo $BAR'
 ```
 output is:
 
@@ -40,12 +40,21 @@ bar
 then run the same command using different environment configuration (`otherenv`)
 
 ```shell
-envctl -config-file test.yaml -command 'echo $BAR' -config otherenv   
+envctl -config-file test.yaml -config otherenv -- 'echo $BAR'
 ```
 output is:
 
 ```
 barother
+```
+
+And of course one can use environment variables `ENVCTL_CONFIG` and `ENVCTL_ENV` to streamline use of `envctl` even further and have it as inobtrusive as possible:
+
+```shell
+export ENVCTL_CONFIG=test.yaml
+export ENVCTL_ENV=myenv
+
+envctl echo '$BAR'
 ```
 
 ### Action: new
