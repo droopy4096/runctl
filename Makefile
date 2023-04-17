@@ -3,14 +3,14 @@
 GIT_HASH := $(shell git rev-parse HEAD)
 VERSION ?= $(shell git tag --contains $(GIT_HASH) | tail -n 1)
 
-check_version:
-ifeq ($(VERSION),)
-	$(error No version specified)
-else
-	echo "Version: $(VERSION)"
-endif
-
 all: build
+
+check_version:
+	ifeq ($(VERSION),)
+		$(error No version specified)
+	else
+		echo "Version: $(VERSION)"
+	endif
 
 release: .build/envctl-$(VERSION).tgz 
 
