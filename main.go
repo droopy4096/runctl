@@ -44,16 +44,30 @@ var (
 const defaultConfigFile = ".envctl.yaml"
 
 func init() {
+	var selectedConfigFile string
+	var selectedConfig string
 	defaultShell, shellSet := os.LookupEnv("SHELL")
 	if !shellSet {
 		defaultShell = "/bin/sh"
 	}
+	envConfigFile, envConfigFileSet := os.LookupEnv("ENVCTL_CONFIG")
+	if envConfigFileSet {
+		selectedConfigFile = envConfigFile
+	} else {
+		selectedConfigFile = defaultConfigFile
+	}
 
-	// flag.StringVar(&shellCommand, "command", "ls /", "comand line to run (one string)")
+	envConfig, envConfigSet := os.LookupEnv("ENVCTL_ENV")
+	if envConfigSet {
+		selectedConfig = envConfig
+	} else {
+		selectedConfig = ""
+	}
+
 	flag.StringVar(&shell, "shell", defaultShell, "shell to use for command interpretation")
 	flag.StringVar(&logFileName, "log", "", "log file name")
-	flag.StringVar(&configFileName, "config-file", defaultConfigFile, "Environment list file")
-	flag.StringVar(&configNames, "config", "", "Environment name")
+	flag.StringVar(&configFileName, "config-file", selectedConfigFile, "Environment list file")
+	flag.StringVar(&configNames, "environment", selectedConfig, "Environment name")
 }
 
 func compileEnv(envVarList EnvVarList) []string {
@@ -115,7 +129,6 @@ func main() {
 	var commandArgs []string
 
 	configPaths := []string{configFileName, path.Join(homeDir, defaultConfigFile), path.Join("/etc/", defaultConfigFile)}
-	// configFile, err := os.Open(configFileName)
 	configFile, err := openConfig(configPaths)
 	if err != nil {
 		fmt.Println(err)
@@ -123,10 +136,14 @@ func main() {
 	defer configFile.Close()
 	configBytes, _ := ioutil.ReadAll(configFile)
 	yaml.Unmarshal(configBytes, &envConfig)
+
 	commandArgs = flag.Args()
 
+	if len(commandArgs) < 1 {
+		fmt.Fprintln(os.Stderr, "No command specified")
+		return
+	}
 	shellCommand = strings.Join(commandArgs, " ")
-	fmt.Println("Command to run: " + shellCommand)
 	cmd := exec.Command(shell, "-c", shellCommand)
 
 	configNameList := strings.Split(configNames, ",")
