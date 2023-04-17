@@ -1,16 +1,24 @@
-.PHONY: build all release
+.PHONY: build all release check_version
 
 GIT_HASH := $(shell git rev-parse HEAD)
-NEAREST_VERSION := $(shell git tag --contains $(GIT_HASH) | tail -n 1)
+VERSION ?= $(shell git tag --contains $(GIT_HASH) | tail -n 1)
+
+check_version:
+ifeq ($(VERSION),)
+	$(error No version specified)
+else
+	echo "Version: $(VERSION)"
+endif
+
 all: build
 
-release: .build/envctl-$(NEAREST_VERSION).tgz 
+release: .build/envctl-$(VERSION).tgz 
 
 .build/README.md: README.md
 	cp README.md .build/README.md
 
-.build/envctl-$(NEAREST_VERSION).tgz: .build/bin/envctl .build/README.md
-	tar -czf .build/envctl-$(NEAREST_VERSION).tgz -C .build bin README.md
+.build/envctl-$(VERSION).tgz: check_version .build/bin/envctl .build/README.md
+	tar -czf .build/envctl-$(VERSION).tgz -C .build bin README.md
 
 build: .build/bin/envctl
 
