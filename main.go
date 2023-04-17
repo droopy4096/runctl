@@ -49,7 +49,7 @@ func init() {
 		defaultShell = "/bin/sh"
 	}
 
-	flag.StringVar(&shellCommand, "command", "ls /", "comand line to run (one string)")
+	// flag.StringVar(&shellCommand, "command", "ls /", "comand line to run (one string)")
 	flag.StringVar(&shell, "shell", defaultShell, "shell to use for command interpretation")
 	flag.StringVar(&logFileName, "log", "", "log file name")
 	flag.StringVar(&configFileName, "config-file", defaultConfigFile, "Environment list file")
@@ -112,6 +112,7 @@ func main() {
 	var stdout, stderr bytes.Buffer
 	var err error
 	var envList []string
+	var commandArgs []string
 
 	configPaths := []string{configFileName, path.Join(homeDir, defaultConfigFile), path.Join("/etc/", defaultConfigFile)}
 	// configFile, err := os.Open(configFileName)
@@ -122,7 +123,12 @@ func main() {
 	defer configFile.Close()
 	configBytes, _ := ioutil.ReadAll(configFile)
 	yaml.Unmarshal(configBytes, &envConfig)
+	commandArgs = flag.Args()
+
+	shellCommand = strings.Join(commandArgs, " ")
+	fmt.Println("Command to run: " + shellCommand)
 	cmd := exec.Command(shell, "-c", shellCommand)
+
 	configNameList := strings.Split(configNames, ",")
 	for _, configName := range configNameList {
 		envList = append(envList, compileEnv(envConfig[configName])...)
