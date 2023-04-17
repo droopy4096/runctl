@@ -12,17 +12,17 @@ check_version:
 		echo "Version: $(VERSION)"
 	endif
 
-release: .build/envctl-$(VERSION).tgz 
+release: .build/runctl-$(VERSION).tgz 
 
 .build/README.md: README.md
 	cp README.md .build/README.md
 
-.build/envctl-$(VERSION).tgz: check_version .build/bin/envctl .build/README.md
-	tar -czf .build/envctl-$(VERSION).tgz -C .build bin README.md
+.build/runctl-$(VERSION).tgz: check_version .build/bin/runctl .build/README.md
+	tar -czf .build/runctl-$(VERSION).tgz -C .build bin README.md
 
-build: .build/bin/envctl
+build: .build/bin/runctl
 
-.build/bin/envctl: main.go .build/bin
+.build/bin/runctl: main.go .build/bin
 	go build -o $@ main.go
 
 .build:
