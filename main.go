@@ -41,7 +41,7 @@ var (
 	configNames    string
 )
 
-const defaultConfigFile = ".envctl.yaml"
+const defaultConfigFile = ".runctl.yaml"
 
 func init() {
 	var selectedConfigFile string
@@ -50,14 +50,14 @@ func init() {
 	if !shellSet {
 		defaultShell = "/bin/sh"
 	}
-	envConfigFile, envConfigFileSet := os.LookupEnv("ENVCTL_CONFIG")
+	envConfigFile, envConfigFileSet := os.LookupEnv("RUNCTL_CONFIG")
 	if envConfigFileSet {
 		selectedConfigFile = envConfigFile
 	} else {
 		selectedConfigFile = defaultConfigFile
 	}
 
-	envConfig, envConfigSet := os.LookupEnv("ENVCTL_ENV")
+	envConfig, envConfigSet := os.LookupEnv("RUNCTL_ENV")
 	if envConfigSet {
 		selectedConfig = envConfig
 	} else {

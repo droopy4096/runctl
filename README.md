@@ -51,8 +51,8 @@ barother
 And of course one can use environment variables `runctl_CONFIG` and `runctl_ENV` to streamline use of `runctl` even further and have it as inobtrusive as possible:
 
 ```shell
-export runctl_CONFIG=test.yaml
-export runctl_ENV=myenv
+export RUNCTL_CONFIG=test.yaml
+export RUNCTL_ENV=myenv
 
 runctl echo '$BAR'
 ```
