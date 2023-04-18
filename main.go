@@ -13,18 +13,30 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+/*
+EnvVar Structure for represeting environment variable entry
+*/
 type EnvVar struct {
 	Name      string `yaml:"name"`
 	Value     string `yaml:"value"`
 	Type      string `yaml:"type,omitempty"`      // *string*, array
 	Separator string `yaml:"separator,omitempty"` // Default: ","
-	Action    string `yaml:"action,omitempty"`    // *replace*, merge, new
+	Action    string `yaml:"action,omitempty"`    // *replace*, merge, new, unset
 }
 
+/*
+EnvVarList - Each environment is in fact list of EnvVar's
+*/
 type EnvVarList []EnvVar
 
+/*
+EnvVarConfig - map of EnvVarList's represeting each individual "environment"
+*/
 type EnvVarConfig map[string]EnvVarList
 
+/*
+NoConfigError - custom error representing "No Config Found event"
+*/
 type NoConfigError struct {
 	SearchPath []string
 }
@@ -66,8 +78,14 @@ func init() {
 
 	flag.StringVar(&shell, "shell", defaultShell, "shell to use for command interpretation")
 	flag.StringVar(&logFileName, "log", "", "log file name")
-	flag.StringVar(&configFileName, "config-file", selectedConfigFile, "Environment list file")
-	flag.StringVar(&configNames, "environment", selectedConfig, "Environment name")
+	flag.StringVar(&configFileName, "config-file", selectedConfigFile, "Environment list file (or $RUNCTL_CONFIG)")
+	flag.StringVar(&configNames, "environment", selectedConfig, "Environment name (or $RUNCTL_ENV)")
+
+	origUsage := flag.Usage
+	flag.Usage = func() {
+		fmt.Fprintf(os.Stderr, os.Args[0]+" [options] [--] command...\n\n")
+		origUsage()
+	}
 }
 
 func compileEnv(envVarList EnvVarList) []string {
