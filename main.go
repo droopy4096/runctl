@@ -51,6 +51,7 @@ var (
 	shellCommand   string
 	configFileName string
 	configNames    string
+  debug          bool
 )
 
 const defaultConfigFile = ".runctl.yaml"
@@ -80,6 +81,7 @@ func init() {
 	flag.StringVar(&logFileName, "log", "", "log file name")
 	flag.StringVar(&configFileName, "config-file", selectedConfigFile, "Environment list file (or $RUNCTL_CONFIG)")
 	flag.StringVar(&configNames, "environment", selectedConfig, "Environment name (or $RUNCTL_ENV)")
+	flag.BoolVar(&debug, "debug", false, "Print debug info")
 
 	origUsage := flag.Usage
 	flag.Usage = func() {
@@ -92,7 +94,11 @@ func compileEnv(envVarList EnvVarList) []string {
 	var eList []string
 	for _, myVar := range envVarList {
 		if myVar.Type == "" {
-			myVar.Type = "string"
+			if myVar.Action == "merge" {
+        myVar.Type="array"
+      } else {
+        myVar.Type = "string"
+      }
 		}
 		if myVar.Action == "" {
 			myVar.Action = "replace"
@@ -101,6 +107,9 @@ func compileEnv(envVarList EnvVarList) []string {
 			myVar.Separator = ","
 		}
 		envVar, defined := os.LookupEnv(myVar.Name)
+    if debug && defined {
+      fmt.Println("Found "+envVar+" defined as \""+envVar+"\" action: "+myVar.Action)
+    }
 		if myVar.Action == "new" {
 			if defined {
 				continue
@@ -116,6 +125,9 @@ func compileEnv(envVarList EnvVarList) []string {
 					elements := strings.Split(envVar, myVar.Separator)
 					myVar.Value = strings.Join(append(elements, myVar.Value), myVar.Separator)
 				}
+        if debug {
+          fmt.Println("Redefined "+envVar+" as \""+myVar.Value+"\"")
+        }
 				os.Setenv(myVar.Name, myVar.Value)
 			}
 		}
