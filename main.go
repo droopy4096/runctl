@@ -51,7 +51,7 @@ var (
 	shellCommand   string
 	configFileName string
 	configNames    string
-  debug          bool
+	debug          bool
 )
 
 const defaultConfigFile = ".runctl.yaml"
@@ -95,10 +95,10 @@ func compileEnv(envVarList EnvVarList) []string {
 	for _, myVar := range envVarList {
 		if myVar.Type == "" {
 			if myVar.Action == "merge" {
-        myVar.Type="array"
-      } else {
-        myVar.Type = "string"
-      }
+				myVar.Type = "array"
+			} else {
+				myVar.Type = "string"
+			}
 		}
 		if myVar.Action == "" {
 			myVar.Action = "replace"
@@ -107,9 +107,9 @@ func compileEnv(envVarList EnvVarList) []string {
 			myVar.Separator = ","
 		}
 		envVar, defined := os.LookupEnv(myVar.Name)
-    if debug && defined {
-      fmt.Println("Found "+envVar+" defined as \""+envVar+"\" action: "+myVar.Action)
-    }
+		if debug && defined {
+			fmt.Println("Found " + envVar + " defined as \"" + envVar + "\" action: " + myVar.Action)
+		}
 		if myVar.Action == "new" {
 			if defined {
 				continue
@@ -125,9 +125,9 @@ func compileEnv(envVarList EnvVarList) []string {
 					elements := strings.Split(envVar, myVar.Separator)
 					myVar.Value = strings.Join(append(elements, myVar.Value), myVar.Separator)
 				}
-        if debug {
-          fmt.Println("Redefined "+envVar+" as \""+myVar.Value+"\"")
-        }
+				if debug {
+					fmt.Println("Redefined " + envVar + " as \"" + myVar.Value + "\"")
+				}
 				os.Setenv(myVar.Name, myVar.Value)
 			}
 		}
@@ -179,6 +179,10 @@ func main() {
 	configNameList := strings.Split(configNames, ",")
 	for _, configName := range configNameList {
 		envList = append(envList, compileEnv(envConfig[configName])...)
+	}
+	if debug {
+		fmt.Fprintln(os.Stderr, "Command executed: ", shellCommand)
+		fmt.Fprintln(os.Stderr, envList)
 	}
 	cmd.Env = append(os.Environ(), envList...)
 	cmd.Stdout = &stdout
